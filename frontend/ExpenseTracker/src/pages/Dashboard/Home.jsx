@@ -1,21 +1,23 @@
-import React from "react";
-import DashboardLayout from "../../components/layouts/DashboardLayout";
-import useUserAuth from "../../hooks/useUserAuth";
+import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
-import axiosInstance from "../../utils/axiosInstance";
-import { API_PATHS } from "../../utils/apiPaths";
-import { useEffect } from "react";
-import InfoCard from "../../components/Cards/InfoCard";
-import { addThousandSeparator } from "../../utils/helper";
 import { IoMdCard } from "react-icons/io";
 import { LuHandCoins, LuWalletMinimal } from "react-icons/lu";
+
+import axiosInstance from "../../utils/axiosInstance";
+import { API_PATHS } from "../../utils/apiPaths";
+import { addThousandSeparator } from "../../utils/helper";
+
+import InfoCard from "../../components/Cards/InfoCard";
+import DashboardLayout from "../../components/layouts/DashboardLayout";
 import RecentTransactions from "../../components/Dashboard/RecentTransactions";
 import FinanceOverview from "../../components/Dashboard/FinanceOverview";
 import ExpenseTransactions from "../../components/Dashboard/ExpenseTransactions";
 import RecentIncomeWithChart from "../../components/Dashboard/RecentIncomeWithChart";
 import RecentIncome from "../../components/Dashboard/RecentIncome";
-import Last30DaysExpenses from "../../components/Dashboard/last30DaysExpenses";
+import Last30DaysExpense from "../../components/Dashboard/Last30DaysExpense";
+
+import useUserAuth from "../../hooks/useUserAuth";
 
 const Home = () => {
   useUserAuth();
@@ -92,7 +94,7 @@ const Home = () => {
             onSeeMore={() => navigate("/expense")}
           />
 
-          <Last30DaysExpenses
+          <Last30DaysExpense
             data={dashboardData?.last30DaysExpenses?.transactions || []}
           />
 
