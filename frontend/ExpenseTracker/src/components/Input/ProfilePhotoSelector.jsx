@@ -8,19 +8,49 @@ const ProfilePhotoSelector = ({ image, setImage }) => {
   const handleImageChange = (e) => {
     const file = e.target.files[0];
 
-    if (file) {
-      // Update image state
-      setImage(file);
+    if (!file) return;
 
-      // Generate preview URL from the file
-      const preview = URL.createObjectURL(file);
-      setPreviewUrl(preview);
+    // Validate file type
+    const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
+    if (!allowedTypes.includes(file.type)) {
+      alert("Please select a valid image file (JPEG, PNG, or WebP)");
+      return;
     }
+
+    // Validate file size (max 5MB)
+    const maxSize = 5 * 1024 * 1024; // 5MB in bytes
+    if (file.size > maxSize) {
+      alert("File size must be less than 5MB");
+      return;
+    }
+
+    // Generate preview URL from the file
+    const preview = URL.createObjectURL(file);
+    setPreviewUrl(preview);
+
+    // Convert file to base64 and pass to parent
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+
+    reader.onload = () => {
+      // Pass the base64 string to the parent component
+      setImage(reader.result);
+    };
+
+    reader.onerror = () => {
+      alert("Error reading file. Please try again.");
+      setPreviewUrl(null);
+    };
   };
 
   const handleRemoveImage = () => {
     setImage(null);
     setPreviewUrl(null);
+
+    // Clean up the preview URL to prevent memory leaks
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+    }
   };
 
   const onChooseFile = () => {
@@ -52,7 +82,7 @@ const ProfilePhotoSelector = ({ image, setImage }) => {
       ) : (
         <div className="relative">
           <img
-            src={previewUrl || URL.createObjectURL(image)}
+            src={previewUrl || image}
             alt="profile image"
             className="w-20 h-20 rounded-full object-cover"
           />

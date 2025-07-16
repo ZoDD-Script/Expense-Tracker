@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import AuthLayout from "../../components/layouts/AuthLayout";
 import { Link, useNavigate } from "react-router-dom";
 import Input from "../../components/Input/Input";
@@ -6,9 +6,7 @@ import { validateEmail } from "../../utils/helper";
 import ProfilePhotoSelector from "../../components/Input/ProfilePhotoSelector";
 import { API_PATHS } from "../../utils/apiPaths";
 import axiosInstance from "../../utils/axiosInstance";
-import { useContext } from "react";
 import { UserContext } from "../../context/userContext";
-import uploadImage from "../../utils/uploadImage";
 
 const SignUp = () => {
   const [profilePic, setProfilePic] = useState(null);
@@ -16,45 +14,55 @@ const SignUp = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   const { updateUser } = useContext(UserContext);
-
   const navigate = useNavigate();
 
   const handleSignUp = async (e) => {
     e.preventDefault();
 
-    let profileImageUrl = "";
+    // Clear any existing errors
+    setError("");
 
+    // Validate email
     if (!validateEmail(email)) {
       setError("Please enter a valid email address");
       return;
     }
 
+    // Validate required fields
     if (!fullName || !email || !password) {
       setError("Please fill in all the fields");
       return;
     }
 
+    // Validate password length
     if (password.length < 8) {
       setError("Password must be at least 8 characters long");
       return;
     }
 
-    setError("");
+    setIsLoading(true);
 
     try {
-      if (profilePic) {
-        const imgUploadRes = await uploadImage(profilePic);
-        profileImageUrl = imgUploadRes.imageUrl || "";
-      }
-
-      const response = await axiosInstance.post(API_PATHS.AUTH.REGISTER, {
+      // Prepare the payload
+      const payload = {
         fullName,
         email,
         password,
-        profileImageUrl,
+        profileImageUrl: profilePic || "", // Send the base64 image or empty string
+      };
+
+      console.log("Sending payload:", {
+        ...payload,
+        profileImageUrl: profilePic,
       });
+
+      const response = await axiosInstance.post(
+        API_PATHS.AUTH.REGISTER,
+        payload
+      );
 
       const { token, user } = response.data;
 
@@ -64,12 +72,20 @@ const SignUp = () => {
         navigate("/dashboard");
       }
     } catch (error) {
+      console.error("Sign up error:", error);
+
       if (error.response && error.response.data.message) {
         setError(error.response.data.message);
       } else {
         setError("Something went wrong. Please try again.");
       }
+    } finally {
+      setIsLoading(false);
     }
+  };
+
+  const handleProfilePicChange = (imageData) => {
+    setProfilePic(imageData);
   };
 
   return (
@@ -83,38 +99,50 @@ const SignUp = () => {
         </p>
 
         <form onSubmit={handleSignUp}>
-          <ProfilePhotoSelector image={profilePic} setImage={setProfilePic} />
+          <ProfilePhotoSelector
+            image={profilePic}
+            setImage={handleProfilePicChange}
+          />
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Input
-              vlaue={fullName}
+              value={fullName} // Fixed typo: was "vlaue"
               onChange={({ target }) => setFullName(target.value)}
               label="Full Name"
               type="text"
               placeholder="Enter Your Full Name"
+              required
             />
 
             <Input
-              vlaue={email}
+              value={email} // Fixed typo: was "vlaue"
               onChange={({ target }) => setEmail(target.value)}
               label="Email Address"
               type="email"
               placeholder="johnathan.doe@example.com"
+              required
             />
 
             <div className="col-span-2">
               <Input
-                vlaue={password}
+                value={password} // Fixed typo: was "vlaue"
                 onChange={({ target }) => setPassword(target.value)}
-                label="Pasword"
+                label="Password" // Fixed typo: was "Pasword"
                 type="password"
                 placeholder="••••••••••••"
+                required
               />
             </div>
           </div>
+
           {error && <p className="text-red-500 text-xs pb-2.5">{error}</p>}
-          <button type="submit" className="btn-primary">
-            SIGNUP
+
+          <button
+            type="submit"
+            className={`${!isLoading ? "btn-primary" : "bg-gray-400"}`}
+            disabled={isLoading}
+          >
+            {isLoading ? "SIGNING UP..." : "SIGNUP"}
           </button>
 
           <p className="text-[13px] text-slate-800 mt-3">
