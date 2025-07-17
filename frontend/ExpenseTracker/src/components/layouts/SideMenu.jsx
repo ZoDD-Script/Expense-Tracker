@@ -58,8 +58,6 @@ const SideMenu = ({ activeMenu }) => {
     reader.onload = async () => {
       const base64Image = reader.result;
       setSelectedImg(base64Image);
-
-      console.log("base64Image", base64Image);
       // Here you can also update the user context or send to backend
       try {
         const response = await axiosInstance.put(
@@ -69,7 +67,6 @@ const SideMenu = ({ activeMenu }) => {
           }
         );
 
-        console.log("response", response);
         if (response.data) {
           toast.success("Profile image updated successfully");
         }

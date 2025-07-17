@@ -54,11 +54,6 @@ const SignUp = () => {
         profileImageUrl: profilePic || "", // Send the base64 image or empty string
       };
 
-      console.log("Sending payload:", {
-        ...payload,
-        profileImageUrl: profilePic,
-      });
-
       const response = await axiosInstance.post(
         API_PATHS.AUTH.REGISTER,
         payload

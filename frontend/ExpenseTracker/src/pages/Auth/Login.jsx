@@ -53,8 +53,6 @@ const Login = () => {
         return;
       }
 
-      console.log("Login response:", response.data);
-
       const { token, user } = response.data;
 
       if (!token || !user) {
